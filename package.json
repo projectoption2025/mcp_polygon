@@ -1,0 +1,11 @@
+{
+  "name": "mcp_polygon",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.2.0",
+    "express": "^4.19.0",
+    "dotenv": "^16.4.0"
+  }
+}
