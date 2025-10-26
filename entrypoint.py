@@ -1,38 +1,35 @@
-##!/usr/bin/env python
+#!/usr/bin/env python
 import os
-import subprocess
 from typing import Literal
 from mcp_polygon import server
 
-
 def transport() -> Literal["stdio", "sse", "streamable-http"]:
-    return os.environ.get("MCP_TRANSPORT", "stdio")
-
+    mcp_transport_str = os.environ.get("MCP_TRANSPORT", "stdio")
+    supported_transports = {
+        "stdio": "stdio",
+        "sse": "sse",
+        "streamable-http": "streamable-http",
+    }
+    return supported_transports.get(mcp_transport_str, "stdio")
 
 def start_server():
-    polygon_api_key = os.environ.get("POLYGON_API_KEY", "")
-    if not polygon_api_key:
+    api_key = os.environ.get("POLYGON_API_KEY", "")
+    if not api_key:
         print("Warning: POLYGON_API_KEY environment variable not set.")
     else:
         print("Starting Polygon MCP server with API key configured.")
 
-    # Ensure correct binding
-    port = os.getenv("PORT", "10000")
-    host = "0.0.0.0"
-    print(f"Binding MCP server to {host}:{port}")
+    port = int(os.getenv("PORT", "10000"))
+    os.environ["PORT"] = str(port)
+    os.environ["HOST"] = "0.0.0.0"
+    print(f"Binding Polygon MCP server to 0.0.0.0:{port}")
 
-    # Start uvicorn manually to ensure binding
-    subprocess.run(
-        [
-            "uvicorn",
-            "mcp_polygon.server:app",
-            "--host",
-            host,
-            "--port",
-            port
-        ],
-        check=True
-    )
+    # Запускаем встроенный HTTP сервер MCP
+    server.run(transport=transport())
+
+if __name__ == "__main__":
+    start_server()
+
 
 
 if __name__ == "__main__":
