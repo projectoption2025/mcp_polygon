@@ -10,18 +10,14 @@ def transport() -> Literal["stdio", "sse", "streamable-http"]:
     Defaults to 'stdio' if not set in environment variables.
     """
     mcp_transport_str = os.environ.get("MCP_TRANSPORT", "stdio")
-
-    # These are currently the only supported transports
     supported_transports: dict[str, Literal["stdio", "sse", "streamable-http"]] = {
         "stdio": "stdio",
         "sse": "sse",
         "streamable-http": "streamable-http",
     }
-
     return supported_transports.get(mcp_transport_str, "stdio")
 
 
-# Ensure the server process doesn't exit immediately when run as an MCP server
 def start_server():
     polygon_api_key = os.environ.get("POLYGON_API_KEY", "")
     if not polygon_api_key:
@@ -29,11 +25,15 @@ def start_server():
     else:
         print("Starting Polygon MCP server with API key configured.")
 
-     port = int(os.getenv("PORT", 8080))        # Добавлено
-    os.environ["PORT"] = str(port)             # Убедимся, что uvicorn берёт из env
-    os.environ["HOST"] = "0.0.0.0"             # Важно для Render!
+    # Ensure Render sees the correct binding
+    port = int(os.getenv("PORT", "10000"))
+    os.environ["PORT"] = str(port)
+    os.environ["HOST"] = "0.0.0.0"
+    print(f"Binding MCP server to 0.0.0.0:{port}")
+
     server.run(transport=transport())
 
 
 if __name__ == "__main__":
     start_server()
+
