@@ -29,6 +29,9 @@ def start_server():
     else:
         print("Starting Polygon MCP server with API key configured.")
 
+     port = int(os.getenv("PORT", 8080))        # Добавлено
+    os.environ["PORT"] = str(port)             # Убедимся, что uvicorn берёт из env
+    os.environ["HOST"] = "0.0.0.0"             # Важно для Render!
     server.run(transport=transport())
 
 
