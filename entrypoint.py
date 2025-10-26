@@ -1,21 +1,12 @@
-#!/usr/bin/env python
+##!/usr/bin/env python
 import os
+import subprocess
 from typing import Literal
 from mcp_polygon import server
 
 
 def transport() -> Literal["stdio", "sse", "streamable-http"]:
-    """
-    Determine the transport type for the MCP server.
-    Defaults to 'stdio' if not set in environment variables.
-    """
-    mcp_transport_str = os.environ.get("MCP_TRANSPORT", "stdio")
-    supported_transports: dict[str, Literal["stdio", "sse", "streamable-http"]] = {
-        "stdio": "stdio",
-        "sse": "sse",
-        "streamable-http": "streamable-http",
-    }
-    return supported_transports.get(mcp_transport_str, "stdio")
+    return os.environ.get("MCP_TRANSPORT", "stdio")
 
 
 def start_server():
@@ -25,15 +16,26 @@ def start_server():
     else:
         print("Starting Polygon MCP server with API key configured.")
 
-    # Ensure Render sees the correct binding
-    port = int(os.getenv("PORT", "10000"))
-    os.environ["PORT"] = str(port)
-    os.environ["HOST"] = "0.0.0.0"
-    print(f"Binding MCP server to 0.0.0.0:{port}")
+    # Ensure correct binding
+    port = os.getenv("PORT", "10000")
+    host = "0.0.0.0"
+    print(f"Binding MCP server to {host}:{port}")
 
-    server.run(transport=transport())
+    # Start uvicorn manually to ensure binding
+    subprocess.run(
+        [
+            "uvicorn",
+            "mcp_polygon.server:app",
+            "--host",
+            host,
+            "--port",
+            port
+        ],
+        check=True
+    )
 
 
 if __name__ == "__main__":
     start_server()
+
 
